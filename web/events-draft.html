@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Market Events Intelligence — Events</title>
+<style>
+:root{--bg:#f4f1e8;--ink:#4b3822;--muted:#7b6b58;--line:#d9d5ca;--accent:#8a6a2f;--up:#2e6b4e;--down:#9a4a43}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;position:relative;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-2;opacity:.46;background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjE2MDAiIHZpZXdCb3g9IjAgMCAxMjAwIDE2MDAiPgo8ZmlsdGVyIGlkPSJub2lzZSI+CjxmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjAxMiAwLjAyIiBudW1PY3RhdmVzPSIzIiBzZWVkPSI4IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+CjxmZUNvbG9yTWF0cml4IHR5cGU9InNhdHVyYXRlIiB2YWx1ZXM9IjAiLz4KPC9maWx0ZXI+CjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmNGYxZTgiLz4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI25vaXNlKSIgZmlsbD0iI2M3YTc3YyIgb3BhY2l0eT0iMC4yMCIvPgo8L3N2Zz4=");background-size:700px 940px;background-repeat:repeat;mix-blend-mode:multiply}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.30;background:
+radial-gradient(circle at 14% 18%, rgba(184,150,103,.16) 0, rgba(184,150,103,.10) 8%, transparent 20%),
+radial-gradient(circle at 72% 24%, rgba(196,165,119,.14) 0, rgba(196,165,119,.08) 7%, transparent 18%),
+radial-gradient(circle at 33% 53%, rgba(176,141,95,.12) 0, rgba(176,141,95,.07) 9%, transparent 22%),
+radial-gradient(circle at 80% 73%, rgba(190,155,108,.13) 0, rgba(190,155,108,.07) 8%, transparent 19%),
+radial-gradient(circle at 22% 86%, rgba(198,167,123,.12) 0, rgba(198,167,123,.06) 8%, transparent 20%);
+filter:blur(10px)}
+.topbar{height:50px;border-bottom:1px solid rgba(170,151,125,.35);display:flex;align-items:center;background:rgba(248,245,237,.82);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20}
+.topbar-inner{width:min(1180px,calc(100% - 48px));margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:Georgia,"Times New Roman",serif;font-size:17px;letter-spacing:-.02em}
+.nav{display:flex;gap:24px;font-size:12px;color:var(--muted)} .nav span:first-child{color:var(--ink)}
+main{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:50px 0 72px}
+.intro{border-bottom:1px solid var(--line);padding-bottom:30px}
+.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;font-weight:700}
+h1{margin:0;max-width:880px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,4.4vw,64px);line-height:1.04;letter-spacing:-.038em;font-weight:700}
+.scope{display:flex;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:13px}
+.scope span{padding:0 18px;border-left:1px solid var(--line)} .scope span:first-child{padding-left:0;border-left:0}
+.scope b{color:var(--ink);font-weight:650}
+.controls{display:flex;justify-content:space-between;align-items:center;padding:22px 0 14px;gap:16px}
+.controls-left{display:flex;gap:8px;flex-wrap:nowrap;align-items:center}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:11px;color:var(--muted);background:transparent;cursor:pointer;white-space:nowrap}
+.chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dataset-note{font-size:11px;color:var(--muted);text-align:right}
+.list{border-top:1px solid var(--ink)}
+.row{display:grid;grid-template-columns:126px 96px 1.65fr 120px 120px;gap:18px;align-items:center;min-height:84px;padding:15px 4px;border-bottom:1px solid var(--line)}
+.row.header{min-height:auto;padding:10px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#8a7760}
+.date{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ticker{font-size:13px;font-weight:750}.ticker .sub{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:500}
+.event-title{font-family:Georgia,"Times New Roman",serif;font-size:18px;line-height:1.25}
+.event-type{font-size:11px;color:var(--muted);margin-top:5px}
+.metric{font-size:15px;font-weight:750;font-variant-numeric:tabular-nums}.metric.up{color:var(--up)}.metric.down{color:var(--down)}.placeholder{color:#a09586}
+.legend{display:flex;gap:18px;padding:12px 4px 0;color:var(--muted);font-size:11px}
+@media(max-width:850px){.controls{align-items:flex-start;flex-direction:column}.controls-left{flex-wrap:wrap}.row{grid-template-columns:105px 75px 1fr 90px 90px;gap:10px}.event-title{font-size:15px}.metric{font-size:13px}.nav{display:none}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><div class="brand">Market Events Intelligence</div><div class="nav"><span>Events</span><span>Methodology</span><span>About</span></div></div></header>
+<main>
+<section class="intro">
+<div class="kicker">Event-driven semiconductor research</div>
+<h1>When a beat still sinks the stock.</h1>
+<div class="scope"><span><b>Coverage</b> Semiconductor sector</span><span><b>Period</b> 2019–2025</span><span><b>Dataset</b> 20 selected events</span></div>
+</section>
+
+<section class="controls">
+<div class="controls-left">
+<button class="chip active" data-filter="all">All events</button>
+<button class="chip" data-filter="earnings">Earnings</button>
+<button class="chip" data-filter="guidance">Guidance</button>
+<button class="chip" data-filter="product">Product</button>
+<button class="chip" data-filter="macro">Macro / policy</button>
+</div>
+<div class="dataset-note">Final dates and metrics populate from the research dataset.</div>
+</section>
+
+<section class="list" id="events">
+<div class="row header"><div>Event date</div><div>Ticker</div><div>Event</div><div>EPS surprise</div><div>1D move</div></div>
+
+<div class="row" data-type="earnings">
+<div class="date">YYYY-MM-DD</div><div class="ticker">NVDA</div>
+<div><div class="event-title">Earnings beat, market reaction diverges</div><div class="event-type">Earnings · Expectations gap</div></div>
+<div class="metric up">+X.X%</div><div class="metric down">−X.X%</div>
+</div>
+
+<div class="row" data-type="guidance">
+<div class="date">YYYY-MM-DD</div><div class="ticker">AMD</div>
+<div><div class="event-title">Forward guidance resets AI expectations</div><div class="event-type">Guidance · AI accelerators</div></div>
+<div class="metric up">+X.X%</div><div class="metric up">+X.X%</div>
+</div>
+
+<div class="row" data-type="earnings">
+<div class="date">YYYY-MM-DD</div><div class="ticker">AVGO</div>
+<div><div class="event-title">AI silicon narrative strengthens after results</div><div class="event-type">Earnings · Narrative shift</div></div>
+<div class="metric up">+X.X%</div><div class="metric up">+X.X%</div>
+</div>
+
+<div class="row" data-type="earnings">
+<div class="date">YYYY-MM-DD</div><div class="ticker">TSM</div>
+<div><div class="event-title">Fundamental strength meets geopolitical risk</div><div class="event-type">Earnings · Geopolitics</div></div>
+<div class="metric up">+X.X%</div><div class="metric down">−X.X%</div>
+</div>
+
+<div class="row" data-type="guidance">
+<div class="date">YYYY-MM-DD</div><div class="ticker">INTC</div>
+<div><div class="event-title">Foundry investment changes near-term expectations</div><div class="event-type">Guidance · Capex</div></div>
+<div class="metric down">−X.X%</div><div class="metric down">−X.X%</div>
+</div>
+
+<div class="row" data-type="macro">
+<div class="date">YYYY-MM-DD</div><div class="ticker">SOXX<span class="sub">Sector proxy</span></div>
+<div><div class="event-title">Rates reprice semiconductor valuations</div><div class="event-type">Macro · Rates</div></div>
+<div class="metric placeholder">N/A</div><div class="metric down">−X.X%</div>
+</div>
+</section>
+
+<div class="legend"><span><b>EPS surprise</b> = reported EPS vs. consensus estimate</span><span><b>1D move</b> = event-day stock return</span></div>
+</main>
+
+<script>
+const buttons=document.querySelectorAll('.chip');
+const rows=document.querySelectorAll('#events .row[data-type]');
+buttons.forEach(button=>button.addEventListener('click',()=>{
+buttons.forEach(b=>b.classList.remove('active'));button.classList.add('active');
+const filter=button.dataset.filter;
+rows.forEach(row=>row.style.display=(filter==='all'||row.dataset.type===filter)?'grid':'none');
+}));
+</script>
+</body>
+</html>

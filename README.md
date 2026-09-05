@@ -8,17 +8,22 @@ The project is intentionally narrow: semiconductor-related events from 2019–20
 
 ## Project status
 
-The project is currently in the data-validation stage.
+P1 seed validation is complete for the defined sample. PostgreSQL (P2) is the next implementation phase.
 
-- `data/events.csv` contains 26 candidate events across seven tickers.
-- Announcement dates, release timing, event type, and sources have been reviewed.
-- 25 rows are currently verified.
-- Candidate `C12` has a confirmed announcement date but remains unverified because an authoritative publication timestamp was not available.
-- The candidate pool will be reduced to a final sample of approximately 20 events before reaction metrics are calculated.
+- `data/events_candidates.csv` preserves all 26 original records and research notes, plus new candidates C27 and C28. Original fields are archival and may contain superseded values.
+- `data/events.csv` contains the curated 20-event sample: 13 earnings, four guidance, and three macro events across seven tickers and 2019–2025.
+- `data/event_review.csv` records inclusion decisions and every existing-field correction, including normalized metadata for excluded candidates.
+- `data/estimates.csv` contains 13 sourced actual/consensus EPS pairs: 11 have reviewed comparable bases; C19/C25 remain unverified and are retained for qualitative analysis only.
+- C12 is anchored to the export rule's October 7 public-inspection filing at 11:15 AM Eastern and is classified `intraday`.
+- `data/p1_validation.csv` documents eight beat/down sign-divergence cases and three aligned comparisons (C03, C11, C23), using published next-session closing observations. These are manually supported sample roles, not computed or causally established effects.
+
+See [the P1 review](docs/P1_REVIEW.md) for findings, sources, corrections, and the TSM exclusion from automatic EPS analysis. Database work has not started.
 
 The database, price pipeline, reaction calculations, API, and frontend described below are the planned next stages and should not be interpreted as completed features yet.
 
 ## Research question
+
+The current [frontend HTML draft](web/events-draft.html) can be opened directly in a browser. It preserves the supplied design and working event-type filters. Its sample rows, dates, and metrics are placeholders; it is not connected to the production dataset or an API.
 
 The project asks:
 
@@ -48,12 +53,21 @@ The events are manually selected rather than randomly sampled. The candidate poo
 | `event_date` | Actual announcement date in `YYYY-MM-DD` format. |
 | `release_timing` | `bmo` = before market open, `amc` = after market close, `intraday` = during market hours. |
 | `event_type` | Primary event category: `earnings`, `guidance`, `macro`, or `product`. |
-| `fiscal_quarter` | Fiscal quarter reported or discussed; blank for events where it does not apply. |
+| `fiscal_quarter` | Reported company quarter in `FYxxQx` format, such as `FY24Q1`; blank for macro and acquisition events. |
 | `expected_pattern` | Pre-analysis hypothesis: `aligned`, `divergent`, or `macro`. It is not the calculated result. |
 | `why_selected` | Short explanation of why the event belongs in the candidate pool. |
+| `headline` | Short factual event description, separate from interpretation in `why_selected`. |
 | `recall_confidence` | Initial confidence in the candidate description before full validation. |
 | `source_url` | Source used to validate the event. |
 | `verified` | Whether the date, source, and timing have been sufficiently validated. |
+| `release_time_et` | Documented announcement/publication time in America/New_York, `HH:MM`; blank when only the session category is established. |
+| `timing_source_url`, `timing_notes` | Evidence and scope of the timing assertion; a syndication time is not necessarily the earliest publication. |
+| `sample_role` | Selection role: `divergence_candidate`, `comparison`, `additional_aligned`, `qualitative`, or `macro`; never a computed flag. |
+| `analysis_scope` | `eps_and_price` for comparable earnings, `macro_price` for macro events, or `qualitative` for guidance and unverified EPS cases. |
+
+The production dictionary applies to `events.csv`. The research archive retains original wording and formatting; `event_review.csv` supplies its reviewed values. The review log's `field_corrections` captures old and new values; all production rows also gain headline, timing-evidence, and sample-role fields.
+
+Fiscal years are company-specific, not calendar labels: NVIDIA's May 2023 release is `FY24Q1`, and TSMC's January 2025 release reports `FY24Q4`. For guidance events, this field identifies the quarter **reported**, not the future period guided. A later quantitative guidance dataset must store its own target period. Macro and acquisition events have no fiscal quarter.
 
 ### What “guidance” means
 
@@ -67,9 +81,11 @@ Guidance is management's forward-looking outlook, such as expected revenue, marg
 |---|---|
 | `bmo` | First trading day on or after `event_date`. |
 | `amc` | First trading day after `event_date`. |
-| `intraday` | First trading day after `event_date` under the current daily-close methodology. This avoids measuring a close-to-close return that partly occurred before the announcement; intraday data would be needed for a more precise same-day window. |
+| `intraday` | First trading day on or after `event_date`. The daily close-to-close window includes some pre-announcement trading. |
 
 This distinction prevents an after-hours earnings release from being matched to a return that occurred before the information became public.
+
+Use US trading sessions and available price dates to handle weekends and holidays. A release documented at the 16:00 closing minute is classified `amc` when corroborated by an after-close schedule. Timing is interpreted in America/New_York, including daylight saving time. One-day reaction uses the close immediately before the reaction day as its baseline; five-day reaction ends on the fifth trading day counting the reaction day as day one.
 
 The planned SQL layer will use trading-day indices and a per-event `LATERAL JOIN` to locate the appropriate reaction date. A 60-trading-day volume baseline will exclude the event day to avoid look-ahead bias.
 
@@ -82,6 +98,16 @@ The planned SQL layer will use trading-day indices and a per-event `LATERAL JOIN
 - Divergence between the earnings surprise and share-price direction
 
 EPS actuals and consensus estimates will use one consistent basis—preferably non-GAAP—because mixing GAAP and non-GAAP values can create misleading surprise percentages.
+
+Automatic EPS/price divergence requires an `earnings` event with `analysis_scope=eps_and_price` and a joined, verified comparable EPS pair. Require matching accounting basis, currency, share units, and split basis. Macro, product, and acquisition events are excluded. Guidance events remain qualitative unless comparable quantitative guidance expectations are separately collected; they do not become EPS divergence merely because the same release contains earnings.
+
+For comparable earnings, the planned sign test compares `actual_eps - consensus_eps` with the one-day stock return. Opposite nonzero signs indicate mechanical divergence; zero or unavailable inputs produce no divergence classification. EPS surprise percentage uses `100 * (actual - consensus) / abs(consensus)`; zero consensus gives NULL percentage. This handles loss estimates without reversing beat/miss direction. These calculations belong in SQL, not the CSV validator. Five-day and SOXX-relative results are separate metrics and must not be substituted to fill the eight-case target. Guidance and concurrent news can explain a mechanical mismatch without proving the earnings caused the move.
+
+### EPS inputs
+
+`estimates.csv` joins on `candidate_id` and `fiscal_quarter`. It stores actual and consensus EPS, separate basis labels, currency, share unit, split basis, consensus snapshot date/kind, actual/consensus/comparison sources, a basis-review source, a comparability verification flag, and research notes. `USD` values for TSM are per ADR, not TWD per ordinary share. Historical NVIDIA values retain the share units used at each announcement; do not mix them with later split-restated EPS.
+
+`consensus_snapshot_date` is a documentary proxy: the publication date of a preview, or the release-day results report for C22. It is not an exact analyst-vendor extraction timestamp. `snapshot_kind` distinguishes these cases. Sources come from different providers and may use different estimate panels. C01's preview was subsequently updated; contemporaneous results reporting corroborates its consensus value. These are manually researched retrospective inputs, not an immutable point-in-time feed. TSM's consensus basis is explicitly `unverified` and `comparability_verified=FALSE`.
 
 ## Planned architecture
 
@@ -108,23 +134,15 @@ The planned metric layer will use:
 
 ## Using the current dataset
 
-Clone the repository and load the CSV with any standard data tool. For example:
+Run the offline, standard-library CSV validation:
 
-```python
-import pandas as pd
-
-events = pd.read_csv("data/events.csv", parse_dates=["event_date"])
-verified_events = events[events["verified"]]
-
-print(verified_events["release_timing"].value_counts())
+```sh
+python3 scripts/validate_seed.py
 ```
 
-Before treating the file as the final research sample:
+A successful check confirms structure, cross-file consistency, qualitative-only restrictions, and evidence coverage for eight sign-divergence cases plus three aligned comparisons. It checks the manually reviewed evidence; it does not independently certify websites or calculate financial metrics. The two blocked TSM pairs are reported separately. No dependencies, credentials, or network access are needed.
 
-1. Resolve or remove any row where `verified` is `FALSE`.
-2. Reduce the candidate pool to the documented final selection.
-3. Preserve source links and do not change classifications to force a more interesting result.
-4. Keep earnings actuals and consensus estimates on the same GAAP or non-GAAP basis.
+`p1_validation.csv` is an audit artifact, not the production price/reaction table. Its percentages are source-reported observations at differing precision. P3/P5 will collect adjusted prices and compute SQL metrics, then reconcile any discrepancies. P1 completion covers seed selection, not completion of those later analytical phases.
 
 ## Limitations
 
@@ -139,10 +157,11 @@ Before treating the file as the final research sample:
 
 - [x] Create and source the candidate event dataset
 - [x] Add release-timing and fiscal-quarter fields
-- [ ] Resolve the remaining unverified timing record and select the final sample
+- [x] Resolve C12 timing and prepare a curated 20-event sample
+- [x] Complete P1 seed acceptance: verify eight sign-divergence cases and three aligned comparisons; restrict unresolved TSM EPS pairs to qualitative analysis
 - [ ] Create the PostgreSQL schema and seed-data import
 - [ ] Collect adjusted historical prices
-- [ ] Add consistent consensus and actual EPS data
+- [ ] Optional TSM EPS extension: reconcile two consensus bases before enabling automatic EPS analysis
 - [ ] Calculate reaction and divergence metrics in SQL
 - [ ] Build the FastAPI endpoints
 - [ ] Connect the web interface to the validated data
