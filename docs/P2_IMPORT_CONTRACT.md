@@ -1,6 +1,6 @@
 # P2 seed import contract
 
-P1 membership is human-approved. No PostgreSQL schema or loader currently exists. This contract specifies the required staging approach for P2, not an implemented database service.
+P1 membership is human-approved. P2 is implemented in [the schema](../db/01_schema.sql), [transactional loader](../db/02_load_seed.sql), and [database acceptance checks](../db/03_verify_seed.sql). Run `python3 scripts/db.py setup` from the repository root; see the [README](../README.md#local-postgresql-setup) for connection and lifecycle commands. The approved CSV files are unchanged.
 
 ## Events: exact staging order
 
@@ -48,3 +48,13 @@ Do not seed production computed metrics from `p1_validation.csv` or `tsm_researc
 ## Reaction and benchmark constraints
 
 Map `bmo` and `intraday` to the first available trading session on or after the announcement, and `amc` strictly after it. Intraday close-to-close windows include pre-announcement trading. For SOXX macro events use a broader SPY/QQQ benchmark if collected, or NULL excess return. Never calculate a SOXX-against-SOXX excess return. The choice of broader benchmark and price ingestion will be implemented in their later phases.
+
+## P2 implementation and validation
+
+PostgreSQL 16 receives all 18 event columns and all 17 estimate CSV columns through temporary text staging tables. Both COPY commands use explicit column lists and `HEADER MATCH`. The pair-level CSV currency, share unit, and split basis each populate separate actual/consensus database columns; all provenance and notes are retained. Nullable dates, quarters, and times remain NULL. Numeric EPS is never filled with zero.
+
+The loader serializes imports with a transaction advisory lock, validates staging membership, role/year counts, coverage, snapshots and units, then applies named upserts under database constraints. Post-import checks run before COMMIT. Any failure rolls back the whole transaction, including prior event updates. Extra production rows are rejected rather than silently deleted. Re-running the same import leaves seed contents unchanged; incompatible existing schemas require a migration.
+
+`automatic_eps_inputs` is the shared SQL admission view for future metrics. It yields the 11 approved comparable earnings inputs; C19/C25 remain excluded. The `prices` table is ready for P3 and initially empty. No reaction, surprise, or divergence metric is computed during P2.
+
+`python3 scripts/db.py test` runs the existing 10 P1 regression tests and seven live database tests in `scripts/test_database.py`. Database tests cover PostgreSQL version, idempotent reloads, header order, approved membership, late-failure rollback, field/foreign-key/comparability constraints, and independent scope/comparability gates. They verify that event and estimate contents are unchanged afterward. Run against this local development database with no concurrent writers.

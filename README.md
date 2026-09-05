@@ -8,7 +8,7 @@ The project is intentionally narrow: semiconductor-related events from 2019–20
 
 ## Project status
 
-P1 seed validation is complete for the defined sample. PostgreSQL (P2) is the next implementation phase.
+P1 seed validation and the local PostgreSQL setup (P2) are complete. Adjusted historical price collection (P3) is next.
 
 - `data/events_candidates.csv` preserves all 26 original records and research notes, plus new candidates C27 and C28. Original fields are archival and may contain superseded values.
 - `data/events.csv` contains the curated 20-event sample: 13 earnings, four guidance, and three macro events across seven tickers and 2019–2025.
@@ -17,9 +17,9 @@ P1 seed validation is complete for the defined sample. PostgreSQL (P2) is the ne
 - C12 is anchored to the export rule's October 7 public-inspection filing at 11:15 AM Eastern and is classified `intraday`.
 - `data/p1_validation.csv` documents eight beat/down sign-divergence cases and three aligned comparisons (C03, C11, C23), using published next-session closing observations. These are manually supported sample roles, not computed or causally established effects.
 
-See [the P1 review](docs/P1_REVIEW.md) for findings, sources, corrections, and the TSM exclusion from automatic EPS analysis. Database work has not started.
+See [the P1 review](docs/P1_REVIEW.md) for findings, sources, corrections, and the TSM exclusion from automatic EPS analysis. The database holds the same approved sample, with 11 eligible EPS inputs and two blocked TSM pairs.
 
-The database, price pipeline, reaction calculations, API, and frontend described below are the planned next stages and should not be interpreted as completed features yet.
+The price pipeline, reaction calculations, API, and connected frontend remain planned stages.
 
 ## Research question
 
@@ -101,7 +101,7 @@ EPS actuals and consensus estimates will use one consistent basis—preferably n
 
 Automatic EPS/price divergence requires an `earnings` event with `analysis_scope=eps_and_price` and a joined, verified comparable EPS pair. Require matching accounting basis, currency, share units, and split basis. Macro, product, and acquisition events are excluded. Guidance events remain qualitative unless comparable quantitative guidance expectations are separately collected; they do not become EPS divergence merely because the same release contains earnings.
 
-The eligibility gate in `scripts/validate_seed.py` requires both `analysis_scope=eps_and_price` and `comparability_verified=TRUE`, finite non-null actual and consensus EPS, matching EPS bases, and matching currency, share unit, and split basis. The current estimates schema declares currency/share unit/split basis once for the pair, applying to both values; side-specific values, when supplied, must agree. `comparability_verified` controls EPS-pair admission but does not override analysis scope or missing/incompatible inputs. Event metadata verification is independent. C19/C25 remain excluded from both automatic EPS surprise and divergence.
+The eligibility gate in `scripts/validate_seed.py` requires both `analysis_scope=eps_and_price` and `comparability_verified=TRUE`, finite non-null actual and consensus EPS, matching EPS bases, and matching currency, share unit, and split basis. The estimates CSV declares currency/share unit/split basis once for the pair, applying to both values; side-specific values, when supplied, must agree. `comparability_verified` controls EPS-pair admission but does not override analysis scope or missing/incompatible inputs. Event metadata verification is independent. C19/C25 remain excluded from both automatic EPS surprise and divergence.
 
 For comparable earnings, the planned sign test compares `actual_eps - consensus_eps` with the one-day stock return. Opposite nonzero signs indicate mechanical divergence; zero or unavailable inputs produce no divergence classification. EPS surprise percentage uses `100 * (actual - consensus) / abs(consensus)`; zero consensus gives NULL percentage. This handles loss estimates without reversing beat/miss direction. These calculations belong in SQL, not the CSV validator. C16 (about -1.21%, softer outlook) and C22 (about -1.10%, overlapping Apple modem-business transaction) are weak/confounded sign-divergence cases, not evidence of the same causal strength as every other case. Five-day and SOXX-relative results are separate metrics and must not be substituted to fill the eight-case target. Guidance and concurrent news can explain a mechanical mismatch without proving the earnings caused the move.
 
@@ -153,7 +153,23 @@ A successful check confirms structure, cross-file consistency, qualitative-only 
 
 ## Database import contract
 
-No PostgreSQL schema or loader exists yet. `events.csv` has 18 columns; its header is not a seven-column import schema. P2 must use an 18-column staging table and an explicit named-column INSERT projection, retaining `analysis_scope` and verification metadata. Never positionally copy this file into a seven-column table. See [the P2 import contract](docs/P2_IMPORT_CONTRACT.md) for the exact staging order and admission rules.
+The [schema](db/01_schema.sql) preserves all 18 event fields, stores EPS provenance and separate actual/consensus units, and provides an empty `prices` table for P3. The [loader](db/02_load_seed.sql) validates exact CSV headers with `HEADER MATCH`, stages text values, and imports explicitly named columns in one transaction. Repeat imports update matching IDs; failed imports roll back. `automatic_eps_inputs` implements the eligibility gate in SQL without computing financial metrics. See [the P2 import contract](docs/P2_IMPORT_CONTRACT.md).
+
+### Local PostgreSQL setup
+
+Requires Python 3 and Docker with Compose, with Docker running. Run from the repository root:
+
+```sh
+python3 scripts/db.py setup  # validate CSVs, start PostgreSQL 16, import seeds
+python3 scripts/db.py check  # verify database membership and eligibility
+python3 scripts/db.py test   # P1 tests plus live database integration tests
+python3 scripts/db.py load  # reload approved CSVs after validation
+python3 scripts/db.py stop  # stop the container, retaining its data
+```
+
+Setup generates a private, ignored `.env` if absent; `.env.example` documents the settings. Connect at `127.0.0.1:5433`, database/user `priced_in`, using the password in `.env`. Set `POSTGRES_PORT` before setup if that port is occupied. The container binds only to localhost and keeps data in the `priced-in_postgres_data` Docker volume. Run `setup` again to restart and reload. Changing `.env` does not rotate the password of an initialized database.
+
+The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/C25 remain qualitative; research CSVs are not imported as computed results. Prices remain empty until P3. Integration tests exercise repeated imports, header/membership rejection, constraints, independent eligibility gates, and rollback after a late import failure; temporary test mutations roll back. Schema creation is repeatable, but future schema changes require explicit migrations. This is a local development setup; API access and deployment configuration belong to later phases.
 
 ## Limitations
 
@@ -170,7 +186,7 @@ No PostgreSQL schema or loader exists yet. `events.csv` has 18 columns; its head
 - [x] Add release-timing and fiscal-quarter fields
 - [x] Resolve C12 timing and prepare a curated 20-event sample
 - [x] Complete P1 seed acceptance: verify eight sign-divergence cases and three aligned comparisons; restrict unresolved TSM EPS pairs to qualitative analysis
-- [ ] Create the PostgreSQL schema and seed-data import
+- [x] Create the PostgreSQL schema and seed-data import
 - [ ] Collect adjusted historical prices
 - [ ] Optional TSM EPS extension: reconcile two consensus bases before enabling automatic EPS analysis
 - [ ] Calculate reaction and divergence metrics in SQL

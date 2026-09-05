@@ -1,6 +1,6 @@
 # P1 selection and input review
 
-Final seed review: September 5, 2026. **P1 is complete for the defined production sample.** Published closing-session evidence supports eight mechanical EPS/price sign-divergence cases and three aligned comparisons. All 20 events have reviewed announcement metadata. C19 and C25 remain in the sample for qualitative analysis only, with unverified EPS comparability explicitly excluded from automatic calculations. Their unresolved accounting reconciliation is not represented as verified. P2 is the next implementation phase; PostgreSQL and production metrics have not been implemented.
+Final seed review: September 5, 2026. **P1 is complete for the defined production sample.** Published closing-session evidence supports eight mechanical EPS/price sign-divergence cases and three aligned comparisons. All 20 events have reviewed announcement metadata. C19 and C25 remain in the sample for qualitative analysis only, with unverified EPS comparability explicitly excluded from automatic calculations. Their unresolved accounting reconciliation is not represented as verified. P2 PostgreSQL setup is now implemented and tested; the approved P1 CSVs and sample composition are unchanged. See the [P2 import contract](P2_IMPORT_CONTRACT.md). Production prices and metrics remain P3/P5 work.
 
 ## Sample
 
