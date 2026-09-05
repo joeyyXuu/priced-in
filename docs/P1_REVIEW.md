@@ -4,7 +4,7 @@ Final seed review: September 5, 2026. **P1 is complete for the defined productio
 
 ## Sample
 
-The 20 selected events cover all seven tickers and every year from 2019 through 2025. They comprise 13 earnings, four guidance, and three macro events. C27 and C28 were added to research to address the original pool's shortage of defensible earnings-divergence candidates; C05 and C17 give up their sample slots. All original 26 records and notes remain unchanged in `events_candidates.csv`, followed by the two new records. Archive labels are historical research, not current truth. `event_review.csv` records normalized metadata for all 28 and every change to an existing production field.
+The 20 selected events cover all seven tickers and every year from 2019 through 2025. They comprise 13 earnings, four guidance, and three macro events. C27 and C28 were added to research to address the original pool's shortage of defensible earnings-divergence candidates; C05 and C17 give up their sample slots. All original 26 records and research notes remain in `events_candidates.csv`, followed by the two new records. The user-authorized TSM supplement corrects C20’s candidate `expected_pattern` from `divergent` to `aligned`; its original `why_selected` is preserved as superseded research reasoning. Archive labels are historical research, not current truth. `event_review.csv` records normalized metadata for all 28 and every change to an existing production field.
 
 | ID | Ticker | Announcement | Reported quarter | Role |
 |---|---|---|---|---|
@@ -74,10 +74,10 @@ Issuer-distributed earnings-release timestamps and issuer footers support the ot
 | C11 | 0.58 | 0.70 | 2022-11-15 | Comparable non-GAAP |
 | C16 | 1.05 | 1.03 | 2022-08-02 | Comparable non-GAAP; 15:30 ET preview |
 | C18 | -1.07 | -1.18 | 2023-09-20 | Comparable non-GAAP; smaller loss is a beat |
-| C19 | 1.94 | 1.74 | 2024-10-11 | BLOCKED: reconcile consensus with IFRS ADR actual |
+| C19 | 1.94 | 1.79 | Unverified for replacement source | BLOCKED: provisional FactSet/IBD input; TIFRS actual |
 | C22 | 1.06 | 0.89 | 2019-07-25 | Comparable non-GAAP; release-day reporting proxy |
 | C23 | 1.17 | 1.11 | 2021-11-14 | Comparable non-GAAP |
-| C25 | 2.24 | 2.16 | 2025-01-15 | BLOCKED: reconcile consensus with IFRS ADR actual |
+| C25 | 2.24 | 2.16 | Unverified for historical table | BLOCKED: MarketBeat numeric pair; TIFRS actual |
 | C27 | 4.02 | 3.36 | 2023-11-21 | Comparable non-GAAP; morning preview |
 | C28 | 0.62 | 0.48 | 2024-06-19 | Comparable non-GAAP |
 
@@ -112,4 +112,48 @@ These percentages are transcribed at each source's precision; no return calculat
 
 The TSM investigation confirmed the issuer's Q3 and Q4 actuals, their ADR units, and the published consensus numbers. The [issuer's Q4 earnings release](https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2025-01/cc4e1dec3474f69109d5455fbf8939c3e3cd5a71/4Q24EarningsRelease.pdf) explicitly identifies consolidated TIFRS. [Zacks' own methodology](https://zacksdata.com/consensus/faq/) distinguishes adjusted Street and BNRI estimates. Its [Q4 comparison](https://www.zacks.com/stock/news/2402068/taiwan-semiconductor-manufacturing-company-ltd-tsm-hit-a-52-week-high-can-the-run-continue) confirms the selected numbers but supplies no quarter-specific bridge from those adjustments to TIFRS. Therefore both `comparability_verified` flags stay FALSE and `consensus_eps_basis` stays `unverified`. The investigation is closed for P1 with an explicit qualitative-only disposition; upgrading either row later requires actual reconciliation evidence.
 
-Acceptance checks: 20 production events; 28 preserved research candidates including every original field of C01–C26; seven tickers; all years 2019–2025 represented; three macro events; eight supported sign-divergence cases; three supported aligned comparisons; no automatic EPS use of qualitative or macro cases. Source snapshot limitations for C01 and C22 remain disclosed. No commitments about causal significance, low-volatility controls, or immutable point-in-time consensus data are made.
+Acceptance checks: 20 production events; 28 preserved research candidates with original research notes preserved and the explicitly requested C20 pattern correction; seven tickers; all years 2019–2025 represented; three macro events; eight supported sign-divergence cases; three supported aligned comparisons; no automatic EPS use of qualitative or macro cases. Source snapshot limitations for C01 and C22 remain disclosed. No commitments about causal significance, low-volatility controls, or immutable point-in-time consensus data are made.
+
+
+## User-supplied TSM supplement
+
+This supplement changes only TSM research inputs and their validation. The final 20 event IDs, eight supported divergence cases, three designated comparisons, and macro sample remain unchanged. `events.csv` and `p1_validation.csv` need no changes. C20 remains excluded; adding it would require proposing a sample change first.
+
+| ID | Actual / consensus, USD per ADR | Supplied indicative EPS difference | Disposition |
+|---|---|---|---|
+| C20 | 1.79 / 1.68 | +6.55% | Correct candidate and reviewed pattern to aligned; remain excluded |
+| C19 | 1.94 / 1.79 | +8.38% | Replace selected Zacks 1.74 with provisional user-supplied FactSet/IBD 1.79; qualitative aligned |
+| C25 | 2.24 / 2.16 | +3.70% | Values unchanged; MarketBeat becomes selected consensus source; qualitative aligned |
+
+`data/tsm_research.csv` stores these three provisional pairs, supplied percentages, explicit `actual_eps_unit=usd_per_adr` and `consensus_eps_unit=usd_per_adr`, price observations, source URLs, and source-access limitations. These are research claims, not accepted SQL EPS surprises: accounting comparability remains unverified. `estimates.csv` continues to contain only selected earnings events, so C20 is not added there.
+
+All three actuals use **`tifrs`**, not `non_gaap`; consensus basis stays **`unverified`**, and **`comparability_verified=FALSE`**. For the two selected records, `currency=USD` plus `share_unit=adr` expresses the same units; validation cross-checks them against the two explicit unit fields in the supplement. Historical generic `ifrs` labels in the review notes describe earlier work; the current EPS fields now use the precise `tifrs` value.
+
+Source verification and reaction-window findings:
+
+- C20: [TSMC’s release](https://pr.tsmc.com/english/news/2965) supplies the actual. The accessible [Seeking Alpha transcript](https://seekingalpha.com/article/4546344-taiwan-semiconductor-manufacturing-company-limited-tsm-q3-2022-earnings-call-transcript) did not expose the supplied 1.68 consensus; retain it as user-supplied provisional research. [StatMuse](https://www.statmuse.com/money/ask/tsm-stock-price-in-oct-2022) displays 60.84 for October 12 and 63.22 for October 13, supporting the supplied approximately +3.91% direction. The provider’s price-adjustment convention was not independently established; do not mix these levels with another series. The original divergent narrative is superseded.
+- C19: the [official PDF](https://investor.tsmc.com/chinese/encrypt/files/encrypt_file/reports/2024-10/d00bfb55ffe01e36f56863f975e88d827f9943e8/3Q24EarningsRelease.pdf) confirms the actual and TIFRS reporting. The accessible [IBD excerpt](https://www.investors.com/news/technology/tsm-stock-taiwan-semiconductor-q3-2024-earnings/) identifies FactSet but truncates before the consensus value. Store the user’s 1.79 provisionally; do not claim independently verified access to that figure or snapshot. This is a provider change, not evidence that Zacks’ earlier 1.74 was incorrect. The supplied [Reuters URL](https://www.reuters.com/technology/us-chip-stocks-rally-tsmcs-ai-backed-outlook-impresses-investors-2024-10-17/) was inaccessible in this review. Preserve the supplied **more-than-11%** move as an unspecified post-announcement observation, not a closing return: a separate [Reuters closing recap](https://www.investing.com/news/stock-market-news/futures-rise-as-chip-stocks-rally-after-tsmc-results-economic-data-in-focus-3667855) reports **+9.8%** for the US-listed shares.
+- C25: [TSMC](https://pr.tsmc.com/english/news/3201) and [MarketBeat’s historical earnings table](https://www.marketbeat.com/stocks/NYSE/TSM/earnings/) confirm 2.24 actual / 2.16 consensus. MarketBeat’s generic GAAP actual column does not disclose the consensus accounting basis. The user’s approximately +3.9% reaction has no dedicated price citation in the supplement and remains an unverified, unspecified-window claim.
+
+The previous Zacks sources and snapshot dates are preserved in the two estimates’ notes. Do not carry those dates onto different sources: replacement-source `consensus_snapshot_date` is blank and `snapshot_kind=unverified_snapshot`. The validator permits that combination only for blocked inputs. It also checks TIFRS, both ADR units, candidate/review alignment, consistency with selected EPS rows, and C20’s exclusion. Numerical-source verification is explicitly separate from accounting-basis verification.
+
+**P1 remains complete for its unchanged, restricted sample, and P2 can proceed.** This supplement neither promotes TSM into automatic EPS analysis nor changes the supported eight-plus-three evidence set. No financial metrics were computed in Python, and no commit or push was performed.
+
+
+## Final human-review hardening
+
+The user approved the existing 20-event membership. No event was added, removed, or replaced. The exact role counts remain eight divergence candidates, three aligned comparisons, three macro events, and six qualitative events. Annual counts are 2019: 1, 2020: 1, 2021: 1, 2022: 4, 2023: 4, 2024: 6, 2025: 3. This is a purposive sample covering all seven years with greater weight on the recent AI cycle, not a balanced panel or a minimum-two-per-year sample. No project-plan file or existing minimum-two-per-year claim was found.
+
+C12 retains the GovInfo PDF as its underlying rule source. Its timing evidence now points specifically to the [October 7 public-inspection list](https://www.federalregister.gov/public-inspection/2022/10/07), which lists document 2022-21658 filed at 11:15 a.m. on October 7. The October 11 list is not the timing source. The review log records the same evidence URL.
+
+C16 and C22 remain among the eight mechanical beat/down cases but are explicitly weak/confounded: the reported declines are approximately 1.21% and 1.10%, with softer outlook and the Apple modem-business transaction respectively complicating interpretation. Divergence is opposite EPS-surprise and price-reaction signs, not proof that EPS caused the movement. These cases are not presented as equally strong causal evidence.
+
+C22 retains the reported-at-release 0.89 consensus and its original source limitation. It remains automatically eligible on comparable EPS bases; the available pre-release 0.90 would also be below actual EPS of 1.06, leaving the beat classification unchanged.
+
+The shared `automatic_eps_eligible` validation gate requires earnings scope (`eps_and_price`) AND a verified comparable pair, non-null finite EPS values, matching accounting bases and currency/share/split units, and the correct event/quarter join. Pair-wide unit columns currently apply to both actual and consensus; any side-specific units must agree. `events.verified` concerns event metadata/date/timing only. `estimates.comparability_verified` concerns EPS comparability and cannot by itself override qualitative scope. Regression tests exercise C19/C25 with real numeric pairs, with scope-only changes, and with hypothetically comparable pairs still in qualitative scope; both stay excluded.
+
+C12/C13 close-to-close returns include trading before their intraday announcements. C26 is broad trade-policy/market-sentiment context, not a direct semiconductor tariff. SOXX macro excess returns must use a broader SPY/QQQ benchmark or remain NULL; SOXX must not benchmark itself. Price, benchmark and metric implementation remains later-phase work.
+
+The repository has no PostgreSQL table or loader to retrofit. The [explicit P2 staging/import contract](P2_IMPORT_CONTRACT.md) lists all 18 CSV fields and requires a named-column projection with eligibility metadata preserved. No direct positional copy into a seven-column table is permitted. This documentation makes the import requirement explicit without prematurely implementing P2.
+
+Run `python3 scripts/validate_seed.py` and `python3 -m unittest discover -s tests -v`. The final hardening leaves `events_candidates.csv` untouched, including the previously authorized C20 correction. P1 remains complete and ready for P2; no commit or push is authorized.
