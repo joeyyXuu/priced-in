@@ -7,3 +7,6 @@ __pycache__/
 node_modules/
 web/dist/
 .DS_Store
+
+# Reproducible local provider snapshots (not production seed files)
+data/prices/

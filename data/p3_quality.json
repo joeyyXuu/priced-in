@@ -1,0 +1,26 @@
+[
+  {
+    "ticker": "AVGO",
+    "date": "2024-07-15",
+    "kind": "split",
+    "value": "10.0"
+  },
+  {
+    "ticker": "NVDA",
+    "date": "2021-07-20",
+    "kind": "split",
+    "value": "4.0"
+  },
+  {
+    "ticker": "NVDA",
+    "date": "2024-06-10",
+    "kind": "split",
+    "value": "10.0"
+  },
+  {
+    "ticker": "SOXX",
+    "date": "2024-03-07",
+    "kind": "split",
+    "value": "3.0"
+  }
+]

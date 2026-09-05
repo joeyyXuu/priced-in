@@ -8,7 +8,7 @@ The project is intentionally narrow: semiconductor-related events from 2019–20
 
 ## Project status
 
-P1 seed validation and the local PostgreSQL setup (P2) are complete. Adjusted historical price collection (P3) is next.
+P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. SQL metric calculations remain a later phase.
 
 - `data/events_candidates.csv` preserves all 26 original records and research notes, plus new candidates C27 and C28. Original fields are archival and may contain superseded values.
 - `data/events.csv` contains the curated 20-event sample: 13 earnings, four guidance, and three macro events across seven tickers and 2019–2025.
@@ -19,7 +19,7 @@ P1 seed validation and the local PostgreSQL setup (P2) are complete. Adjusted hi
 
 See [the P1 review](docs/P1_REVIEW.md) for findings, sources, corrections, and the TSM exclusion from automatic EPS analysis. The database holds the same approved sample, with 11 eligible EPS inputs and two blocked TSM pairs.
 
-The price pipeline, reaction calculations, API, and connected frontend remain planned stages.
+Reaction calculations, the API, and the connected frontend remain planned stages.
 
 ## Research question
 
@@ -169,7 +169,7 @@ python3 scripts/db.py stop  # stop the container, retaining its data
 
 Setup generates a private, ignored `.env` if absent; `.env.example` documents the settings. Connect at `127.0.0.1:5433`, database/user `priced_in`, using the password in `.env`. Set `POSTGRES_PORT` before setup if that port is occupied. The container binds only to localhost and keeps data in the `priced-in_postgres_data` Docker volume. Run `setup` again to restart and reload. Changing `.env` does not rotate the password of an initialized database.
 
-The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/C25 remain qualitative; research CSVs are not imported as computed results. Prices remain empty until P3. Integration tests exercise repeated imports, header/membership rejection, constraints, independent eligibility gates, and rollback after a late import failure; temporary test mutations roll back. Schema creation is repeatable, but future schema changes require explicit migrations. This is a local development setup; API access and deployment configuration belong to later phases.
+The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/C25 remain qualitative; research CSVs are not imported as computed results. P3 now supplies 12,448 historical price rows across eight tickers. Integration tests exercise repeated imports, header/membership rejection, constraints, independent eligibility gates, and rollback after a late import failure; temporary test mutations roll back. Schema creation is repeatable, but future schema changes require explicit migrations. This is a local development setup; API access and deployment configuration belong to later phases.
 
 ## Limitations
 
@@ -187,7 +187,7 @@ The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/
 - [x] Resolve C12 timing and prepare a curated 20-event sample
 - [x] Complete P1 seed acceptance: verify eight sign-divergence cases and three aligned comparisons; restrict unresolved TSM EPS pairs to qualitative analysis
 - [x] Create the PostgreSQL schema and seed-data import
-- [ ] Collect adjusted historical prices
+- [x] Collect adjusted historical prices
 - [ ] Optional TSM EPS extension: reconcile two consensus bases before enabling automatic EPS analysis
 - [ ] Calculate reaction and divergence metrics in SQL
 - [ ] Build the FastAPI endpoints
@@ -197,3 +197,17 @@ The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/
 ## Responsible use
 
 This repository is an educational event-study project. It describes historical market reactions and does not provide forecasts, personalized investment recommendations, or trading advice.
+
+## P3 historical prices
+
+Run the price pipeline in a dedicated virtual environment (the tested environment uses Python 3.9):
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-prices.txt
+.venv/bin/python scripts/prices.py
+```
+
+The first run downloads prices; later runs reuse hash-checked snapshots in ignored `data/prices/`. Use `--refresh` to replace snapshots with a new download. PostgreSQL must already be running. The importer validates all sessions before loading and checks the database values afterward. It preserves the approved event and estimate CSVs.
+
+See [P3 review](docs/P3_REVIEW.md), [event coverage](data/p3_coverage.csv), and [corporate-action/volume checks](data/p3_quality.json). This phase stores adjusted closes and provider volume; it does not compute production return or divergence metrics.
