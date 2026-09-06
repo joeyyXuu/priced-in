@@ -2,6 +2,8 @@
 
 Priced In currently separates its backend work into `scripts/` for Python and `db/` for SQL. There is no single `backend/` folder. Python runs on your Mac; PostgreSQL runs inside Docker. The P6 web API lives in `api/` and runs in a second Docker container.
 
+For the complete command sequence, see [local operations](OPERATIONS.md). The user-facing methodology is served at `/methodology`. Public deployment remains P9.
+
 ## Where everything lives
 
 ```text

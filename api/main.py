@@ -103,3 +103,8 @@ app.mount("/assets", StaticFiles(directory=WEB), name="assets")
 @app.get("/", include_in_schema=False)
 def frontend():
     return FileResponse(WEB / "events-draft.html")
+
+
+@app.get("/methodology", include_in_schema=False)
+def methodology():
+    return FileResponse(WEB / "methodology.html")

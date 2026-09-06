@@ -8,7 +8,7 @@ The project is intentionally narrow: semiconductor-related events from 2019–20
 
 ## Project status
 
-P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. P4 consensus-estimate acceptance is also complete; P5 SQL metrics are complete; the read-only FastAPI layer (P6) is implemented. The frontend now displays API data.
+P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. P4 consensus-estimate acceptance is also complete; P5 SQL metrics are complete; the read-only FastAPI layer (P6) is implemented. The frontend now displays API data. P8 methodology and operational documentation are complete; public deployment (P9) remains pending.
 
 - `data/events_candidates.csv` preserves all 26 original records and research notes, plus new candidates C27 and C28. Original fields are archival and may contain superseded values.
 - `data/events.csv` contains the curated 20-event sample: 13 earnings, four guidance, and three macro events across seven tickers and 2019–2025.
@@ -41,7 +41,7 @@ The candidate dataset covers:
 - **Patterns:** aligned reactions, potential divergences, and macro events
 - **Sources:** company investor-relations pages, SEC filings, and government or reputable financial-news sources
 
-The events are manually selected rather than randomly sampled. This is a purposive event sample covering every year from 2019 through 2025, with greater weight on the recent AI cycle. It is not a balanced panel. The approved annual counts are 2019: 1, 2020: 1, 2021: 1, 2022: 4, 2023: 4, 2024: 6, and 2025: 3. The candidate pool is designed to include potential expectation/reaction divergences, ordinary control cases, and macro events that affected the semiconductor sector without a company earnings release.
+The events are manually selected rather than randomly sampled. This is a purposive event sample covering every year from 2019 through 2025, with greater weight on the recent AI cycle. It is not a balanced panel. The approved annual counts are 2019: 1, 2020: 1, 2021: 1, 2022: 4, 2023: 4, 2024: 6, and 2025: 3. The candidate pool is designed to include potential expectation/reaction divergences, aligned comparison cases, and macro events that affected the semiconductor sector without a company earnings release.
 
 ## Data dictionary
 
@@ -87,23 +87,23 @@ This distinction prevents an after-hours earnings release from being matched to 
 
 Use US trading sessions and available price dates to handle weekends and holidays. A release documented at the 16:00 closing minute is classified `amc` when corroborated by an after-close schedule. Timing is interpreted in America/New_York, including daylight saving time. One-day reaction uses the close immediately before the reaction day as its baseline; five-day reaction ends on the fifth trading day counting the reaction day as day one.
 
-The planned SQL layer will use trading-day indices and a per-event `LATERAL JOIN` to locate the appropriate reaction date. A 60-trading-day volume baseline will exclude the event day to avoid look-ahead bias.
+The SQL layer uses trading-day indices and a per-event `LATERAL JOIN` to locate the reaction date. Its volume baseline averages the 60 sessions before the reaction day, excluding that day. For after-close releases, the baseline includes announcement-day trading.
 
-## Planned metrics
+## Calculated metrics
 
 - EPS surprise percentage
 - One-day and five-day price reaction
-- One-day excess return relative to SOXX
-- Event-day volume relative to the prior 60-trading-day average
+- One-day and five-day excess returns relative to SOXX for companies, or SPY for SOXX macro events
+- Reaction-day volume relative to the prior 60-trading-day average
 - Divergence between the earnings surprise and share-price direction
 
-EPS actuals and consensus estimates will use one consistent basis—preferably non-GAAP—because mixing GAAP and non-GAAP values can create misleading surprise percentages.
+The 11 admitted EPS pairs use matching non-GAAP bases. TSM actuals use TIFRS, and their unverified consensus bases keep them outside automatic EPS analysis.
 
 Automatic EPS/price divergence requires an `earnings` event with `analysis_scope=eps_and_price` and a joined, verified comparable EPS pair. Require matching accounting basis, currency, share units, and split basis. Macro, product, and acquisition events are excluded. Guidance events remain qualitative unless comparable quantitative guidance expectations are separately collected; they do not become EPS divergence merely because the same release contains earnings.
 
 The eligibility gate in `scripts/validate_seed.py` requires both `analysis_scope=eps_and_price` and `comparability_verified=TRUE`, finite non-null actual and consensus EPS, matching EPS bases, and matching currency, share unit, and split basis. The estimates CSV declares currency/share unit/split basis once for the pair, applying to both values; side-specific values, when supplied, must agree. `comparability_verified` controls EPS-pair admission but does not override analysis scope or missing/incompatible inputs. Event metadata verification is independent. C19/C25 remain excluded from both automatic EPS surprise and divergence.
 
-For comparable earnings, the planned sign test compares `actual_eps - consensus_eps` with the one-day stock return. Opposite nonzero signs indicate mechanical divergence; zero or unavailable inputs produce no divergence classification. EPS surprise percentage uses `100 * (actual - consensus) / abs(consensus)`; zero consensus gives NULL percentage. This handles loss estimates without reversing beat/miss direction. These calculations belong in SQL, not the CSV validator. C16 (about -1.21%, softer outlook) and C22 (about -1.10%, overlapping Apple modem-business transaction) are weak/confounded sign-divergence cases, not evidence of the same causal strength as every other case. Five-day and SOXX-relative results are separate metrics and must not be substituted to fill the eight-case target. Guidance and concurrent news can explain a mechanical mismatch without proving the earnings caused the move.
+For comparable earnings, the SQL sign test compares `actual_eps - consensus_eps` with the one-day stock return. Opposite nonzero signs indicate mechanical divergence; zero or unavailable inputs produce no divergence classification. EPS surprise percentage uses `100 * (actual - consensus) / abs(consensus)`; zero consensus gives NULL percentage. This handles loss estimates without reversing beat/miss direction. These calculations belong in SQL, not the CSV validator. C16 (about -1.21%, softer outlook) and C22 (about -1.10%, overlapping Apple modem-business transaction) are weak/confounded sign-divergence cases, not evidence of the same causal strength as every other case. Five-day and SOXX-relative results are separate metrics and must not be substituted to fill the eight-case target. Guidance and concurrent news can explain a mechanical mismatch without proving the earnings caused the move.
 
 ### EPS inputs
 
@@ -113,11 +113,11 @@ For comparable earnings, the planned sign test compares `actual_eps - consensus_
 
 C22’s reported-at-release 0.89 consensus is accepted with its snapshot limitation because the EPS bases are comparable; the available pre-release 0.90 would still leave actual EPS of 1.06 classified as a beat.
 
-C12 and C13 use reaction-day close-to-close returns that include pre-announcement trading, not pure post-announcement windows. C26 represents broad trade-policy/market sentiment; semiconductors were exempt from this reciprocal-tariff order. For SOXX macro events, use SPY/QQQ as a broader benchmark or leave excess return NULL. Never benchmark SOXX against itself. The current P1 sample adds no benchmark tickers; benchmark data collection belongs to P3.
+C12 and C13 use reaction-day close-to-close returns that include pre-announcement trading, not pure post-announcement windows. C26 represents broad trade-policy/market sentiment; semiconductors were exempt from this reciprocal-tariff order. For SOXX macro events, use SPY/QQQ as a broader benchmark or leave excess return NULL. Never benchmark SOXX against itself. P3 collected SPY alongside the seven event tickers; P5 uses SPY for SOXX macro excess returns.
 
-## Planned architecture
+## Architecture
 
-See the [architecture overview](docs/ARCHITECTURE_OVERVIEW.md) for how the Python scripts, SQL files, Docker database, and planned API connect.
+See the [architecture overview](docs/ARCHITECTURE_OVERVIEW.md) for how the Python scripts, SQL files, Docker database, and API connect.
 
 ```text
 Manually reviewed CSV
@@ -133,12 +133,12 @@ FastAPI
 Web interface
 ```
 
-The planned metric layer will use:
+The implemented metric layer uses:
 
 - `ROW_NUMBER()` to index trading days rather than assuming calendar-day offsets.
 - `LATERAL JOIN` to find the correct reaction date for each event.
-- Window functions to calculate the pre-event volume baseline.
-- Precomputed reaction records so the eventual API does not depend on live external requests.
+- Window functions to calculate the volume baseline before the reaction session.
+- A materialized metric snapshot so the API does not depend on external market-data requests.
 
 ## Using the current dataset
 
@@ -151,11 +151,11 @@ python3 -m unittest discover -s tests -v
 
 A successful check confirms structure, cross-file consistency, qualitative-only restrictions, and evidence coverage for eight sign-divergence cases plus three aligned comparisons. It checks the manually reviewed evidence; it does not independently certify websites or calculate financial metrics. The two blocked TSM pairs are reported separately. No dependencies, credentials, or network access are needed.
 
-`p1_validation.csv` is an audit artifact, not the production price/reaction table. Its percentages are source-reported observations at differing precision. P3/P5 will collect adjusted prices and compute SQL metrics, then reconcile any discrepancies. P1 completion covers seed selection, not completion of those later analytical phases.
+`p1_validation.csv` is an audit artifact, not the production price/reaction table. Its percentages are source-reported observations at differing precision. P3 collected adjusted prices; P5 computed SQL metrics and exported the reconciliation in `data/p5_reconciliation.csv`. P1 completion covers seed selection, not completion of those later analytical phases.
 
 ## Database import contract
 
-The [schema](db/01_schema.sql) preserves all 18 event fields, stores EPS provenance and separate actual/consensus units, and provides an empty `prices` table for P3. The [loader](db/02_load_seed.sql) validates exact CSV headers with `HEADER MATCH`, stages text values, and imports explicitly named columns in one transaction. Repeat imports update matching IDs; failed imports roll back. `automatic_eps_inputs` implements the eligibility gate in SQL without computing financial metrics. See [the P2 import contract](docs/P2_IMPORT_CONTRACT.md).
+The [schema](db/01_schema.sql) preserves all 18 event fields, stores EPS provenance and separate actual/consensus units, and defines the `prices` table populated by P3. The [loader](db/02_load_seed.sql) validates exact CSV headers with `HEADER MATCH`, stages text values, and imports explicitly named columns in one transaction. Repeat imports update matching IDs; failed imports roll back. `automatic_eps_inputs` implements the eligibility gate in SQL without computing financial metrics. See [the P2 import contract](docs/P2_IMPORT_CONTRACT.md).
 
 ### Local PostgreSQL setup
 
@@ -171,14 +171,14 @@ python3 scripts/db.py stop  # stop the container, retaining its data
 
 Setup generates a private, ignored `.env` if absent; `.env.example` documents the settings. Connect at `127.0.0.1:5433`, database/user `priced_in`, using the password in `.env`. Set `POSTGRES_PORT` before setup if that port is occupied. The container binds only to localhost and keeps data in the `priced-in_postgres_data` Docker volume. Run `setup` again to restart and reload. Changing `.env` does not rotate the password of an initialized database.
 
-The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/C25 remain qualitative; research CSVs are not imported as computed results. P3 now supplies 12,448 historical price rows across eight tickers. Integration tests exercise repeated imports, header/membership rejection, constraints, independent eligibility gates, and rollback after a late import failure; temporary test mutations roll back. Schema creation is repeatable, but future schema changes require explicit migrations. This is a local development setup; API access and deployment configuration belong to later phases.
+The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/C25 remain qualitative; research CSVs are not imported as computed results. P3 now supplies 12,448 historical price rows across eight tickers. Integration tests exercise repeated imports, header/membership rejection, constraints, independent eligibility gates, and rollback after a late import failure; temporary test mutations roll back. Schema creation is repeatable, but future schema changes require explicit migrations. This is a local development setup; the read-only API is implemented, while public deployment remains pending.
 
 ## Limitations
 
 - The event sample is small and manually curated, so it is subject to selection bias.
 - The candidate pool intentionally overrepresents notable or potentially divergent reactions.
 - `expected_pattern` is a research hypothesis, not a computed conclusion.
-- Consensus estimates will represent a snapshot rather than the full analyst-estimate distribution.
+- Consensus estimates represent a snapshot rather than the full analyst-estimate distribution.
 - Daily prices cannot isolate an announcement made during market hours as precisely as intraday data.
 - The project is retrospective and should not be used as investment advice.
 
@@ -195,7 +195,8 @@ The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/
 - [x] Calculate reaction and divergence metrics in SQL
 - [x] Build the FastAPI endpoints
 - [x] Connect the web interface to the validated data
-- [ ] Add a full methodology page and deployment
+- [x] Add the full methodology page and local operations guide (P8)
+- [ ] Deploy publicly after deployment review (P9)
 
 ## Responsible use
 
@@ -230,3 +231,7 @@ Run `python3 scripts/setup_api.py` with the database and P5 metrics ready, then 
 ## Connected frontend
 
 Open http://127.0.0.1:8000/ after `python3 scripts/setup_api.py`. Filter by event type, ticker, year or calculated pattern; select a headline for event sources, metrics and price windows. All event rows come from the API. See [frontend notes](docs/FRONTEND_INTEGRATION.md).
+
+## Methodology and operations (P8)
+
+Read the [methodology page](http://127.0.0.1:8000/methodology) in the running app, or its [HTML source](web/methodology.html). Use the [operations guide](docs/OPERATIONS.md) for first setup, maintenance order, tests and troubleshooting. The current frontend is HTML/CSS/JavaScript; no React migration was performed. See [P8 acceptance notes](docs/P8_REVIEW.md).

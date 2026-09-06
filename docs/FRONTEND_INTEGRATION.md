@@ -26,3 +26,5 @@ The page retains the original paper-toned design, adds a mobile card layout, nat
 Real Chrome browser checks passed against the running API: 20 loaded rows, type/ticker/pattern filters, TSM null EPS, detail prices, SPY macro benchmark, empty results, forced API failure and recovery, and no JavaScript page errors. Mobile layout was inspected. The existing seven API tests also passed. Browser testing used temporary Playwright tooling outside the repository.
 
 Production CSVs and database metrics are unchanged. Data collection and SQL snapshot refresh remain separate commands; opening the page does not contact Yahoo or recalculate metrics.
+
+P8 adds a full methodology page at `/methodology`, linked from navigation and the event-list explanation. It is static explanatory content; event rows continue to come exclusively from the API.

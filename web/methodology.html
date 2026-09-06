@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Priced In — Methodology</title>
+<style>
+:root{--bg:#f4f1e8;--ink:#4b3822;--muted:#7b6b58;--line:#d9d5ca;--accent:#8a6a2f;--up:#2e6b4e;--down:#9a4a43}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;position:relative;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-2;opacity:.46;background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjE2MDAiIHZpZXdCb3g9IjAgMCAxMjAwIDE2MDAiPgo8ZmlsdGVyIGlkPSJub2lzZSI+CjxmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjAxMiAwLjAyIiBudW1PY3RhdmVzPSIzIiBzZWVkPSI4IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+CjxmZUNvbG9yTWF0cml4IHR5cGU9InNhdHVyYXRlIiB2YWx1ZXM9IjAiLz4KPC9maWx0ZXI+CjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmNGYxZTgiLz4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI25vaXNlKSIgZmlsbD0iI2M3YTc3YyIgb3BhY2l0eT0iMC4yMCIvPgo8L3N2Zz4=");background-size:700px 940px;background-repeat:repeat;mix-blend-mode:multiply}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.30;background:
+radial-gradient(circle at 14% 18%, rgba(184,150,103,.16) 0, rgba(184,150,103,.10) 8%, transparent 20%),
+radial-gradient(circle at 72% 24%, rgba(196,165,119,.14) 0, rgba(196,165,119,.08) 7%, transparent 18%),
+radial-gradient(circle at 33% 53%, rgba(176,141,95,.12) 0, rgba(176,141,95,.07) 9%, transparent 22%),
+radial-gradient(circle at 80% 73%, rgba(190,155,108,.13) 0, rgba(190,155,108,.07) 8%, transparent 19%),
+radial-gradient(circle at 22% 86%, rgba(198,167,123,.12) 0, rgba(198,167,123,.06) 8%, transparent 20%);
+filter:blur(10px)}
+.topbar{height:50px;border-bottom:1px solid rgba(170,151,125,.35);display:flex;align-items:center;background:rgba(248,245,237,.82);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20}
+.topbar-inner{width:min(1180px,calc(100% - 48px));margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:Georgia,"Times New Roman",serif;font-size:17px;letter-spacing:-.02em}
+.nav{display:flex;gap:24px;font-size:12px;color:var(--muted)} .nav span:first-child{color:var(--ink)}
+main{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:50px 0 72px}
+.intro{border-bottom:1px solid var(--line);padding-bottom:30px}
+.kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;font-weight:700}
+h1{margin:0;max-width:880px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,4.4vw,64px);line-height:1.04;letter-spacing:-.038em;font-weight:700}
+.scope{display:flex;flex-wrap:wrap;margin-top:22px;color:var(--muted);font-size:13px}
+.scope span{padding:0 18px;border-left:1px solid var(--line)} .scope span:first-child{padding-left:0;border-left:0}
+.scope b{color:var(--ink);font-weight:650}
+.controls{display:flex;justify-content:space-between;align-items:center;padding:22px 0 14px;gap:16px}
+.controls-left{display:flex;gap:8px;flex-wrap:nowrap;align-items:center}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:11px;color:var(--muted);background:transparent;cursor:pointer;white-space:nowrap}
+.chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dataset-note{font-size:11px;color:var(--muted);text-align:right}
+.list{border-top:1px solid var(--ink)}
+.row{display:grid;grid-template-columns:126px 96px 1.65fr 120px 120px;gap:18px;align-items:center;min-height:84px;padding:15px 4px;border-bottom:1px solid var(--line)}
+.row.header{min-height:auto;padding:10px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#8a7760}
+.date{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ticker{font-size:13px;font-weight:750}.ticker .sub{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:500}
+.event-title{font-family:Georgia,"Times New Roman",serif;font-size:18px;line-height:1.25}
+.event-type{font-size:11px;color:var(--muted);margin-top:5px}
+.metric{font-size:15px;font-weight:750;font-variant-numeric:tabular-nums}.metric.up{color:var(--up)}.metric.down{color:var(--down)}.placeholder{color:#a09586}
+.legend{display:flex;gap:18px;padding:12px 4px 0;color:var(--muted);font-size:11px}
+@media(max-width:850px){.controls{align-items:flex-start;flex-direction:column}.controls-left{flex-wrap:wrap}.row{grid-template-columns:105px 75px 1fr 90px 90px;gap:10px}.event-title{font-size:15px}.metric{font-size:13px}.nav{display:none}}
+
+a{color:inherit}select,button{font:inherit;color:inherit}select,#retry,#close-detail{padding:8px;border:1px solid var(--line);background:var(--bg);border-radius:5px}.controls{flex-wrap:wrap}.controls label{font-size:12px}.controls-left{flex-wrap:wrap}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:660px}th{text-align:left;font-size:11px;color:var(--muted);padding:12px 8px;border-top:1px solid var(--ink)}td{padding:20px 8px;border-top:1px solid var(--line)}th:nth-last-child(-n+2),td:nth-last-child(-n+2){text-align:right;white-space:nowrap}.event-button{border:0;background:none;text-align:left;padding:0;cursor:pointer;color:var(--ink)}.event-button:hover{text-decoration:underline}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:3px}#methodology{max-width:800px;line-height:1.6;margin-top:40px;font-size:14px}h2{font-family:Georgia,serif}dialog{max-width:850px;width:calc(100% - 24px);max-height:85vh;overflow:auto;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:24px}dialog::backdrop{background:#0006}#close-detail{float:right;cursor:pointer}#detail-content{clear:both;line-height:1.6}.detail-metrics{display:flex;flex-wrap:wrap;gap:20px}.detail-metrics div{min-width:130px}.detail-metrics b{display:block}.price-table{min-width:400px}.price-scroll{max-height:300px;overflow:auto}.source-links{display:flex;gap:16px;flex-wrap:wrap}.scope #total{padding:0;border:0}#status{font-size:13px;color:var(--muted)}
+
+@media(max-width:600px){#events{min-width:0}#events thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}#events tr{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);padding:16px 0;gap:10px}#events td{border:0;padding:0;text-align:left;white-space:normal}#events td:nth-child(3){grid-column:1/-1}#events td:nth-child(4)::before{content:"EPS surprise";display:block;font-size:11px;color:var(--muted);margin-bottom:5px}#events td:nth-child(5)::before{content:"1D move";display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.scope{gap:8px}.scope span{padding:0;border:0;width:100%}.scope #total{width:auto}}
+.methodology-page{max-width:900px;line-height:1.75}.methodology-page h1{margin-bottom:24px}.methodology-page h2{margin-top:40px}.methodology-page table{min-width:480px}.methodology-page td{white-space:normal!important;text-align:left!important}.methodology-page dt{font-weight:700;margin-top:20px}.methodology-page dd{margin:6px 0 20px}.methodology-page code{overflow-wrap:anywhere}.methodology-page li{margin-bottom:12px}.methodology-page section{scroll-margin-top:70px}</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="/">Priced In</a><nav class="nav"><a href="/">Events</a><a href="/methodology" aria-current="page">Methodology</a></nav></div></header>
+<main class="methodology-page">
+<div class="kicker">How to read this study</div><h1>Methodology</h1>
+<p>Priced In examines historical semiconductor announcements and the market reactions that followed. Its classifications describe observations; they do not establish what caused a stock to move.</p>
+<nav aria-label="On this page"><a href="#sample">Sample</a> · <a href="#timing">Timing</a> · <a href="#prices">Prices</a> · <a href="#eps">EPS</a> · <a href="#calculations">Calculations</a> · <a href="#limits">Limitations</a></nav>
+<section id="sample"><h2>1. A selected historical sample</h2>
+<p>The approved sample contains 20 events from 2019–2025: 13 earnings announcements, four guidance events and three macro events. It covers NVDA, AMD, INTC, TSM, MU, AVGO and the semiconductor ETF SOXX. The research archive preserves 28 candidates, including the 26 original records and two additions.</p>
+<p>Events were selected manually to investigate notable expectation/reaction mismatches. This is not a random sample or a balanced panel. Annual counts are 1, 1, 1, 4, 4, 6 and 3 from 2019 through 2025. Eight eligible cases show a beat followed by a decline; three show conventional aligned directions. Those three comparisons are all NVIDIA and are not matched controls. These counts do not estimate how often earnings beats cause declines in the wider market.</p>
+<p>A headline describes the event factually. Research reasoning explains why it was selected. A selection hypothesis is separate from the calculated one-day classification.</p></section>
+<section id="timing"><h2>2. Announcement dates and reaction sessions</h2>
+<div class="table-scroll"><table><thead><tr><th>Release timing</th><th>Reaction session</th></tr></thead><tbody><tr><td>Before market open (bmo)</td><td>First trading day on or after the announcement date</td></tr><tr><td>After market close (amc)</td><td>First trading day strictly after the announcement date</td></tr><tr><td>During market hours (intraday)</td><td>First trading day on or after the announcement date</td></tr></tbody></table></div>
+<p>Times use America/New_York, including daylight saving time. Trading-session dates account for weekends and market holidays. A documented 16:00 release is treated as after-close when supported by an after-close schedule. The price calendar includes the January 9, 2025 mourning closure.</p>
+<p>The one-day baseline is the close immediately before the reaction session. Five-day returns use that same baseline and end on the fifth trading session, counting the reaction day as day one. Intraday close-to-close returns include trading before the announcement; they are not pure post-announcement reactions.</p></section>
+<section id="prices"><h2>3. Adjusted prices and volume</h2>
+<p>Daily prices come from Yahoo Finance through yfinance. The pipeline explicitly reads the provider’s adjusted close with automatic OHLC adjustment disabled, preserving the original downloaded OHLC and corporate-action fields for review. Adjusted prices account for provider split and distribution adjustments and must not be split-adjusted again.</p>
+<p>For example, a 10-for-1 split turns one $1,000 share into ten $100 shares. That is not a 90% investment loss. An adjusted series places the prices on a comparable basis. Dividend adjustments can also make historical adjusted closes differ from contemporary newspaper closing prices.</p>
+<p>Volume is retained as supplied by the provider. Its split treatment is not independently certified; volume comparisons around splits need care. The volume baseline is the average of the 60 sessions before the reaction day. For after-close announcements, this includes announcement-day trading but excludes the following reaction day. A ratio requires all 60 observations.</p>
+<p>TSM prices refer to the US-listed ADR, not Taiwan-listed ordinary shares. Download snapshots retain retrieval times and hashes locally. Providers can revise historical adjustments, so a refreshed download may change results.</p></section>
+<section id="eps"><h2>4. Comparable EPS, with explicit exclusions</h2>
+<p>Automatic EPS analysis requires an earnings event in the EPS-and-price scope, a verified comparable pair, finite actual and consensus numbers, and matching accounting basis, currency, share units and split basis. Event-date verification alone does not establish EPS comparability.</p>
+<p>Eleven accepted pairs use non-GAAP EPS in USD per diluted common share, with both numbers expressed in announcement-date share units. Historical NVIDIA EPS is not mixed with later split-restated EPS. Fiscal quarters are company-specific: NVIDIA’s May 2023 announcement reports FY24Q1; TSM’s January 2025 announcement reports FY24Q4. For guidance events, the quarter identifies the reported quarter, not a future guidance period. Macro events have no fiscal quarter.</p>
+<p>TSM cases C19 and C25 remain qualitative. Their actuals use TIFRS and USD per ADR, while the consensus accounting basis remains unverified. Provisional research values are visible in details, but automatic EPS surprise and divergence are blank. C20 remains excluded from the production sample.</p>
+<p>Guidance, macro, product and acquisition events are not automatic EPS-divergence cases. Quantitative guidance analysis would require a separately sourced, comparable guidance expectation.</p>
+<p>Consensus dates are documentary publication-date proxies, not immutable vendor snapshots. C01’s preview was later updated; its accepted number retains release-day corroboration. C22 uses release-day consensus of 0.89, distinct from the pre-release 0.90 preview. Both are below the 1.06 actual. Different estimate providers can use different analyst panels.</p></section>
+<section id="calculations"><h2>5. Calculations and worked examples</h2>
+<p>PostgreSQL calculates the metrics. The browser formats returned values without recalculating financial results.</p>
+<dl><dt>EPS surprise (%)</dt><dd><code>100 × (actual − consensus) / abs(consensus)</code>. Actual −1.07 versus expected −1.18 produces +9.32%: a smaller loss than expected. Zero consensus produces no percentage.</dd>
+<dt>One-day return (%)</dt><dd><code>100 × (reaction close / preceding close − 1)</code>. Five-day return substitutes the fifth session’s close using the same preceding close.</dd>
+<dt>Excess return (percentage points)</dt><dd>Event return minus benchmark return over the same dates. A −5% event return and −2% benchmark return give −3 percentage points. This is a simple difference, not a risk-adjusted regression estimate.</dd>
+<dt>Volume multiple</dt><dd>Reaction-day volume divided by the prior 60-session average. Two million shares against a one-million-share baseline means 2×.</dd></dl>
+<p>Company events use SOXX as benchmark. SOXX macro events use the broader-market SPY benchmark; SOXX is never compared against itself. Both one-day and five-day excess returns are calculated.</p>
+<h3>Example: C04, NVIDIA FY25Q2</h3><p>Actual EPS 0.68 versus consensus 0.64 gives <strong>+6.25%</strong>. Adjusted close falls from approximately 125.4033 to 117.3965, giving <strong>−6.38%</strong> over the reaction session. EPS beat while the price declined, so the one-day classification is divergent. Its five-day return is approximately −14.65%; that is a separate measure.</p>
+<h3>What “divergent,” “aligned,” and a dash mean</h3><p>Opposite nonzero signs of actual-minus-consensus EPS and the one-day return mean divergent. Matching nonzero signs mean aligned. A zero EPS difference, flat return, missing input or ineligible event has no automatic classification. A dash means unavailable or outside scope, never zero. With zero consensus, the EPS percentage is unavailable but a nonzero EPS difference can still support the sign test.</p>
+<p>The chosen horizon matters: C11 has a −1.46% one-day return and +3.83% five-day return. Its classification uses the agreed one-day window. Five-day or benchmark-relative results are not substituted to obtain a desired divergence count.</p></section>
+<section id="limits"><h2>6. Interpretation and limitations</h2>
+<ul><li>The sample intentionally includes notable events and is subject to selection bias.</li><li>Guidance, valuation, concurrent news and market conditions can explain price moves. Opposite signs do not establish an earnings-caused effect or statistical significance. C16 and C22 are small, confounded mismatches; C22 also overlaps Intel’s modem-business sale.</li><li>Daily data cannot isolate an intraday announcement. C12 and C13 include pre-announcement trading. C26 reflects broad tariff sentiment; semiconductors were exempt from that reciprocal-tariff order.</li><li>Consensus snapshots, accounting reconciliation and provider adjustments have the limitations described above.</li><li>All 11 eligible one-day results match the reviewed P1 dates and patterns within 0.10 percentage points. That tolerance is an audit flag, not a significance threshold. C19’s calculated closing return is +9.79%; a prior “more than 11%” research claim did not establish the same closing window.</li><li>The stored results refresh explicitly after input changes; they are not live quotes.</li></ul>
+<p>Use event details for source URLs, timing evidence and research notes. This is an educational retrospective study, not a forecast, trading signal or personalized investment recommendation.</p></section>
+<p><a href="/">← Explore the events</a></p>
+</main></body></html>
