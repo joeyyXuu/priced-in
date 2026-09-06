@@ -1,0 +1,14 @@
+candidate_id,fiscal_quarter,actual_eps,consensus_eps,snapshot_kind,consensus_snapshot_date,disposition,database_parity,limitation
+C01,FY20Q2,1.23,1.11,pre_release_publication,2020-07-19,accepted_retrospective,PASS,Updated preview; release-day corroboration retained
+C03,FY24Q2,2.70,2.09,pre_release_publication,2023-08-22,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C04,FY25Q2,0.68,0.64,pre_release_publication,2024-08-28,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C09,FY25Q4,0.89,0.84,pre_release_publication,2025-02-25,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C11,FY23Q3,0.58,0.70,pre_release_publication,2022-11-15,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C16,FY22Q2,1.05,1.03,pre_release_publication,2022-08-02,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C18,FY23Q4,-1.07,-1.18,pre_release_publication,2023-09-20,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C19,FY24Q3,1.94,1.79,unverified_snapshot,,qualitative_only,PASS,Consensus basis and replacement snapshot unverified
+C22,FY19Q2,1.06,0.89,reported_at_release,2019-07-25,accepted_retrospective,PASS,Release-day consensus 0.89; pre-release preview 0.90
+C23,FY22Q3,1.17,1.11,pre_release_publication,2021-11-14,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C25,FY24Q4,2.24,2.16,unverified_snapshot,,qualitative_only,PASS,Consensus basis and replacement snapshot unverified
+C27,FY24Q3,4.02,3.36,pre_release_publication,2023-11-21,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot
+C28,FY24Q3,0.62,0.48,pre_release_publication,2024-06-19,accepted_retrospective,PASS,Publication date proxy; no immutable vendor snapshot

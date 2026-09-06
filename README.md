@@ -8,7 +8,7 @@ The project is intentionally narrow: semiconductor-related events from 2019–20
 
 ## Project status
 
-P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. SQL metric calculations remain a later phase.
+P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. P4 consensus-estimate acceptance is also complete; P5 SQL metrics are next.
 
 - `data/events_candidates.csv` preserves all 26 original records and research notes, plus new candidates C27 and C28. Original fields are archival and may contain superseded values.
 - `data/events.csv` contains the curated 20-event sample: 13 earnings, four guidance, and three macro events across seven tickers and 2019–2025.
@@ -188,6 +188,7 @@ The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/
 - [x] Complete P1 seed acceptance: verify eight sign-divergence cases and three aligned comparisons; restrict unresolved TSM EPS pairs to qualitative analysis
 - [x] Create the PostgreSQL schema and seed-data import
 - [x] Collect adjusted historical prices
+- [x] Complete P4 consensus acceptance: 13 audited pairs, 11 eligible, two qualitative-only
 - [ ] Optional TSM EPS extension: reconcile two consensus bases before enabling automatic EPS analysis
 - [ ] Calculate reaction and divergence metrics in SQL
 - [ ] Build the FastAPI endpoints
@@ -211,3 +212,7 @@ python3 -m venv .venv
 The first run downloads prices; later runs reuse hash-checked snapshots in ignored `data/prices/`. Use `--refresh` to replace snapshots with a new download. PostgreSQL must already be running. The importer validates all sessions before loading and checks the database values afterward. It preserves the approved event and estimate CSVs.
 
 See [P3 review](docs/P3_REVIEW.md), [event coverage](data/p3_coverage.csv), and [corporate-action/volume checks](data/p3_quality.json). This phase stores adjusted closes and provider volume; it does not compute production return or divergence metrics.
+
+## P4 consensus acceptance
+
+Run `python3 scripts/validate_estimates.py` with PostgreSQL running to audit every estimate field against the database and compare Python/SQL eligibility. See [P4 review](docs/P4_REVIEW.md) and [row-level findings](data/p4_estimate_review.csv). The accepted dataset has 11 comparable pairs and two explicitly blocked TSM pairs; P5 can proceed with the documented snapshot limitations.
