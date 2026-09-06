@@ -8,7 +8,7 @@ The project is intentionally narrow: semiconductor-related events from 2019–20
 
 ## Project status
 
-P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. P4 consensus-estimate acceptance is also complete; P5 SQL metrics are next.
+P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical price collection (P3) is complete for the approved event windows. P4 consensus-estimate acceptance is also complete; P5 SQL metrics are complete; the read-only FastAPI layer (P6) is implemented. The frontend now displays API data.
 
 - `data/events_candidates.csv` preserves all 26 original records and research notes, plus new candidates C27 and C28. Original fields are archival and may contain superseded values.
 - `data/events.csv` contains the curated 20-event sample: 13 earnings, four guidance, and three macro events across seven tickers and 2019–2025.
@@ -19,11 +19,11 @@ P1 seed validation and the local PostgreSQL setup (P2) are complete. Historical 
 
 See [the P1 review](docs/P1_REVIEW.md) for findings, sources, corrections, and the TSM exclusion from automatic EPS analysis. The database holds the same approved sample, with 11 eligible EPS inputs and two blocked TSM pairs.
 
-Reaction calculations, the API, and the connected frontend remain planned stages.
+The frontend is served by FastAPI at http://127.0.0.1:8000/.
 
 ## Research question
 
-The current [frontend HTML draft](web/events-draft.html) can be opened directly in a browser. It preserves the supplied design and working event-type filters. Its sample rows, dates, and metrics are placeholders; it is not connected to the production dataset or an API.
+The [frontend](web/events-draft.html) preserves the supplied design and fetches actual events and stored metrics from the API. Open http://127.0.0.1:8000/ after starting the service; opening the HTML directly from disk does not provide the API connection.
 
 The project asks:
 
@@ -117,6 +117,8 @@ C12 and C13 use reaction-day close-to-close returns that include pre-announcemen
 
 ## Planned architecture
 
+See the [architecture overview](docs/ARCHITECTURE_OVERVIEW.md) for how the Python scripts, SQL files, Docker database, and planned API connect.
+
 ```text
 Manually reviewed CSV
         ↓
@@ -190,9 +192,9 @@ The verified seed has 20 events, 13 estimates, and 11 automatic EPS inputs. C19/
 - [x] Collect adjusted historical prices
 - [x] Complete P4 consensus acceptance: 13 audited pairs, 11 eligible, two qualitative-only
 - [ ] Optional TSM EPS extension: reconcile two consensus bases before enabling automatic EPS analysis
-- [ ] Calculate reaction and divergence metrics in SQL
-- [ ] Build the FastAPI endpoints
-- [ ] Connect the web interface to the validated data
+- [x] Calculate reaction and divergence metrics in SQL
+- [x] Build the FastAPI endpoints
+- [x] Connect the web interface to the validated data
 - [ ] Add a full methodology page and deployment
 
 ## Responsible use
@@ -216,3 +218,15 @@ See [P3 review](docs/P3_REVIEW.md), [event coverage](data/p3_coverage.csv), and 
 ## P4 consensus acceptance
 
 Run `python3 scripts/validate_estimates.py` with PostgreSQL running to audit every estimate field against the database and compare Python/SQL eligibility. See [P4 review](docs/P4_REVIEW.md) and [row-level findings](data/p4_estimate_review.csv). The accepted dataset has 11 comparable pairs and two explicitly blocked TSM pairs; P5 can proceed with the documented snapshot limitations.
+
+## P5 SQL metrics
+
+Run `python3 scripts/metrics.py` to calculate and refresh the PostgreSQL metric snapshot, then `python3 scripts/test_metrics.py` for SQL regression tests. See [the SQL walkthrough](docs/P5_REVIEW.md), [calculated metrics](data/p5_metrics.csv), and [P1 reconciliation](data/p5_reconciliation.csv). All 20 events have price metrics; 11 have eligible EPS metrics, yielding eight divergences and three aligned cases. Re-run after any input update; the materialized snapshot does not refresh automatically.
+
+## P6 read-only API
+
+Run `python3 scripts/setup_api.py` with the database and P5 metrics ready, then open [interactive API docs](http://127.0.0.1:8000/docs). The API serves events, filters, event details and price windows from PostgreSQL through a SELECT-only login. See [P6 setup and endpoint contract](docs/P6_API.md). The frontend is available at the same address, `/`.
+
+## Connected frontend
+
+Open http://127.0.0.1:8000/ after `python3 scripts/setup_api.py`. Filter by event type, ticker, year or calculated pattern; select a headline for event sources, metrics and price windows. All event rows come from the API. See [frontend notes](docs/FRONTEND_INTEGRATION.md).
